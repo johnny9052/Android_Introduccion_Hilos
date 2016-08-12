@@ -178,14 +178,18 @@ public class MainActivity extends AppCompatActivity {
     public void clickHilosMultiples(View view){
 
 
-        /*Explicacion*/
+        /*Se definen los hilos*/
         clsAsincrono tarea1 = new clsAsincrono(MainActivity.this, pbarProgreso);
         clsAsincrono tarea2 = new clsAsincrono(MainActivity.this, pbarProgreso2);
 
+        /*Se valida si la version es mayor a honeycomb (3.0)*/
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            /*Si es mayor lo metemos al pool de hilos, (Son maximo 5)*/
+            /*executeOnExecutor(PoolDeHilos, parametros si se desean mandar)*/
             tarea1.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,null);
             tarea2.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,null);
         } else {
+            /*Si no ejecute los hilos normalmente.*/
             tarea1.execute();
             tarea2.execute();
         }
