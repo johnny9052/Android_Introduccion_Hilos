@@ -1,6 +1,8 @@
 package com.example.johnny.android_introduccion_hilos;
 
 import android.app.ProgressDialog;
+import android.os.AsyncTask;
+import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -8,7 +10,9 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 
-/***********************Teoria************************/
+/***********************
+ * Teoria
+ ************************/
 
 /*
 * Todos los componentes de una aplicación Android, tanto las actividades, los servicios, la interfaz
@@ -33,6 +37,7 @@ import android.widget.Toast;
 public class MainActivity extends AppCompatActivity {
 
     ProgressBar pbarProgreso; //Referencia para barra de progreso
+    ProgressBar pbarProgreso2; //Referencia para barra de progreso
     clsAsincrono tarea;  //Referencia para clase asincrona
 
     @Override
@@ -40,23 +45,23 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         /*Se referencia la barra de progreso*/
-        pbarProgreso = (ProgressBar)findViewById(R.id.progressBar);
+        pbarProgreso = (ProgressBar) findViewById(R.id.progressBar);
+        pbarProgreso2 = (ProgressBar) findViewById(R.id.progressBar2);
         /*Se instancia la clase asincrona, mandando como parametro la clase que la llama, como
         * tambien la barra de progreso que sera modificada desde el hilo*/
     }
 
 
     /*Reinicia la barra de progreso en 0 */
-    public void limpiar(View view){
+    public void limpiar(View view) {
         pbarProgreso.setProgress(0);
     }
 
     /*Detenemos el hilo principal durante 1 segundo*/
-    private void detenerHilo()
-    {
+    private void detenerHilo() {
         try {
             Thread.sleep(1000);
-        } catch(InterruptedException e) {
+        } catch (InterruptedException e) {
             //Si sucede error se le indica al usuario
         }
     }
@@ -65,13 +70,13 @@ public class MainActivity extends AppCompatActivity {
     /**************USO DEL HILO PRINCIPAL***********************************/
     /*******************Oppcion no recomendada, ya que bloquea la app*******/
 
-    public void clickUsoHiloPrincipal(View view){
+    public void clickUsoHiloPrincipal(View view) {
         /*Se establece el progress bar en 100 como maximo*/
         pbarProgreso.setMax(100);
         /*Se establece su posicion actual en 0*/
         pbarProgreso.setProgress(0);
 
-        for(int i=1; i<=10; i++) {
+        for (int i = 1; i <= 10; i++) {
             /*Se detiene el hilo 1 segundo*/
             detenerHilo();
             /*Aumenta su progreso */
@@ -85,7 +90,6 @@ public class MainActivity extends AppCompatActivity {
     /**************END USO DEL HILO PRINCIPAL***********************************/
 
 
-
     /**************CREACION DE UN HILO BASICO***********************************/
     /**Oppcion no recomendada, ya que es dificil de mantener, realizar modificaciones
      * y cuando es mucho codigo es complejo de entender *******/
@@ -94,8 +98,7 @@ public class MainActivity extends AppCompatActivity {
     /*Este hilo por si mismo no tiene acceso a los componentes del hilo principal, como la interfaz
     * grafica, para acceder a estos recursos se puede utilizar el metodo post. Tambien esta el
     * metodo runOnUiThread() para enviar operaciones al hilo principal*/
-
-    public void clickHiloSinAccesoAOtrosRecursos(View view){
+    public void clickHiloSinAccesoAOtrosRecursos(View view) {
         new Thread(new Runnable() {
             public void run() {
 
@@ -107,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
                 });
 
                 /*Realizamos el proceso*/
-                for(int i=1; i<=10; i++) {
+                for (int i = 1; i <= 10; i++) {
                     detenerHilo();
                     /*Con el metodo post accedemos al progress bar*/
                     pbarProgreso.post(new Runnable() {
@@ -129,8 +132,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
-
     /************** USO DE LA CLASE ASYNCTASK, OPCION RECOMENDADA*********************************/
 
     /* la clase AsyncTask, permiti realizar lo del boton anterior pero con la ventaja de no tener
@@ -141,21 +142,20 @@ public class MainActivity extends AppCompatActivity {
     * */
 
     /*Se inicia el hilo*/
-    public void clickClaseAsincrona (View view){
-        tarea = new clsAsincrono(MainActivity.this,pbarProgreso);
+    public void clickClaseAsincrona(View view) {
+        tarea = new clsAsincrono(MainActivity.this, pbarProgreso);
         tarea.execute();
     }
 
     /*Se detiene el hilo*/
-    public void clickCancelarClaseAsincrona (View view){
+    public void clickCancelarClaseAsincrona(View view) {
         tarea.cancel(true);
     }
 
     /**************END USO DE LA CLASE ASYNCTASK, OPCION RECOMENDADA*****************************/
 
 
-
-    public void clickClaseAsincronaVentana (View view){
+    public void clickClaseAsincronaVentana(View view) {
         /*Se define un progressDialog*/
         ProgressDialog pDialog = new ProgressDialog(MainActivity.this);
         /*Se define de estilo horizontal o el que se desee*/
@@ -169,13 +169,26 @@ public class MainActivity extends AppCompatActivity {
         /*Se muestra el dialog*/
         pDialog.show();
         /*Se define una instancia de la clase*/
-        clsAsincronoVentana proceso = new clsAsincronoVentana(MainActivity.this,pDialog);
+        clsAsincronoVentana proceso = new clsAsincronoVentana(MainActivity.this, pDialog);
         /*Se ejecuta el hilo*/
         proceso.execute();
     }
 
 
+    public void clickHilosMultiples(View view){
 
 
+        /*Explicacion*/
+        clsAsincrono tarea1 = new clsAsincrono(MainActivity.this, pbarProgreso);
+        clsAsincrono tarea2 = new clsAsincrono(MainActivity.this, pbarProgreso2);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            tarea1.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,null);
+            tarea2.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,null);
+        } else {
+            tarea1.execute();
+            tarea2.execute();
+        }
+    }
 
 }
